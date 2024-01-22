@@ -1,2 +1,5 @@
 # DotMatrix
-Projet Dot Matrix
+Projet Dot Matrix ou Projet Michel
+
+## Introduction
+Michel est le fruit d'une mûre reflexion entre deux étudiants en Sciences Pour l'Ingénieur
