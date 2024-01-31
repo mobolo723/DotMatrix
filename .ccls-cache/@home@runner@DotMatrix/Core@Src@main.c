@@ -1,5 +1,4 @@
 /* USER CODE BEGIN Header */
-
 /**
  ******************************************************************************
  * @file           : main.c
@@ -15,6 +14,8 @@
  * If no LICENSE file comes with this software, it is provided AS-IS.
  *
  ******************************************************************************
+ * @author Antoine DANIEL
+ * @author Thomas LOPES
  */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/

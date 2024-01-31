@@ -21,8 +21,8 @@
  * @defgroup PD Private Defines
  * @{
  */
-#define LARGEUR_MATRICE 128 /**< Width of the matrix. */
-#define HAUTEUR_MATRICE 32  /**< Height of the matrix. */
+#define LARGEUR_MATRICE 128
+#define HAUTEUR_MATRICE 32
 /** @} */
 /* USER CODE END PD */
 

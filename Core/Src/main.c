@@ -1,5 +1,4 @@
 /* USER CODE BEGIN Header */
-
 /**
  ******************************************************************************
  * @file           : main.c
@@ -15,6 +14,8 @@
  * If no LICENSE file comes with this software, it is provided AS-IS.
  *
  ******************************************************************************
+ * @author Antoine DANIEL
+ * @author Thomas LOPES
  */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
@@ -22,24 +23,16 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "font5x7.h"
 #include <stdio.h>
 #include <string.h>
-
-#define LARGEUR_MATRICE 128
-#define HAUTEUR_MATRICE 32
+#include "font5x7.h"
+#include "objects.h"
+#include "screen.h"
+#include "utility.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-typedef struct {
-  // Intensité de la couleur entre 0 et 255
-  unsigned char red, green, blue;
-} Pixel;
-
-typedef struct {
-  Pixel matrice[HAUTEUR_MATRICE][LARGEUR_MATRICE];
-} HUB75_bitset;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -48,7 +41,6 @@ typedef struct {
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -72,36 +64,30 @@ static void MX_TIM16_Init(void);
 /* USER CODE BEGIN PFP */
 /**
  * @brief Affiche l'ensemble de pixels sur la dalle. Correspond à un
- * rafraîchissement.
+ * rafraîchissement complet de la dalle.
  *
  * @param bitset Pointeurs vers l'ensemble de pixels de la dalle.
  */
 void Affichage(HUB75_bitset *bitset);
 
-HUB75_bitset init_bitset();
-Pixel creer_pixel(unsigned char red, unsigned char green, unsigned char blue);
+/**
+ * @brief Recompose le nombre à partir des broches BCD.
+ */
 unsigned char ReadBCD();
-void affichage_bitset(HUB75_bitset *bitset);
-void affiche_lettre(HUB75_bitset *bitset, unsigned int pos_x,
-                    unsigned int pos_y, unsigned char red, unsigned char green,
-                    unsigned char blue, unsigned char lettre);
-void affiche_phrase(HUB75_bitset *bitset, unsigned int pos_x,
-                    unsigned int pos_y, unsigned char red, unsigned char green,
-                    unsigned char blue, unsigned char *phrase);
-void affiche_rectangle(HUB75_bitset *bitset, unsigned int borne_min_x,
-                       unsigned int borne_max_x, unsigned int borne_min_y,
-                       unsigned int borne_max_y, Pixel pixel);
-void decaler_ligne(HUB75_bitset *bitset, unsigned int ligne);
-void delai(uint16_t n);
-void ecrire_pixel(HUB75_bitset *bitset, int pos_x, int pos_y, Pixel pixel);
-void eteindre_pixel(HUB75_bitset *bitset, int pos_x, int pos_y);
-void ReadScore(char *score);
-void ResetDisplay(HUB75_bitset *bitset);
 
+/**
+ * @brief Lit le score affiché
+ *
+ * @param score Pointeur ou chaîne de caractère représentant le score.
+ */
+void ReadScore(char *score);
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+// Déclaration statique de l'affichage qui sera réutilisée tout au long du programme
+// Cette déclaration est nécessaire pour les fonctions de rappel
+static HUB75_bitset affichage;
 /* USER CODE END 0 */
 
 /**
@@ -122,22 +108,21 @@ int main(void)
   /* USER CODE BEGIN Init */
   // Initialisation de toutes les broches à l'état par défaut
   // Output Enable (par défaut à : Bas)
-  HAL_GPIO_WritePin(LAT_GPIO_Port, LAT_Pin, RESET);
+  // HAL_GPIO_WritePin(LAT_GPIO_Port, LAT_Pin, RESET);
 
-  // Output Enable (par défaut à : Haut)
-  HAL_GPIO_WritePin(OE_GPIO_Port, OE_Pin, SET);
+  // // Output Enable (par défaut à : Haut)
+  // HAL_GPIO_WritePin(OE_GPIO_Port, OE_Pin, SET);
 
-  // Output Enable (par défaut à : Bas)
-  HAL_GPIO_WritePin(R1_GPIO_Port, R1_Pin, RESET);
-  HAL_GPIO_WritePin(R2_GPIO_Port, R2_Pin, RESET);
-  HAL_GPIO_WritePin(B1_GPIO_Port, B1_Pin, RESET);
-  HAL_GPIO_WritePin(B2_GPIO_Port, B2_Pin, RESET);
-  HAL_GPIO_WritePin(G1_GPIO_Port, G1_Pin, RESET);
-  HAL_GPIO_WritePin(G2_GPIO_Port, G2_Pin, RESET);
+  // // Output Enable (par défaut à : Bas)
+  // HAL_GPIO_WritePin(R1_GPIO_Port, R1_Pin, RESET);
+  // HAL_GPIO_WritePin(R2_GPIO_Port, R2_Pin, RESET);
+  // HAL_GPIO_WritePin(B1_GPIO_Port, B1_Pin, RESET);
+  // HAL_GPIO_WritePin(B2_GPIO_Port, B2_Pin, RESET);
+  // HAL_GPIO_WritePin(G1_GPIO_Port, G1_Pin, RESET);
+  // HAL_GPIO_WritePin(G2_GPIO_Port, G2_Pin, RESET);
 
-  // Initialisation de la matrice de pixels
-  HUB75_bitset affichage = init_bitset();
-
+  // // Initialisation de la matrice de pixels
+  // HUB75_bitset affichage = init_bitset();
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -152,9 +137,10 @@ int main(void)
   MX_USART2_UART_Init();
   MX_TIM16_Init();
   /* USER CODE BEGIN 2 */
+  HAL_TIM_Base_Start_IT(&htim16);  // Démarage du TIMER 16
 
-  HAL_TIM_Base_Start_IT(&htim16);
 
+  //  Drapeau français
   for (int i = 0; i < 32; i++) {
 	  for (int j = 0; j < 128 / 3; j++) {
 		  ecrire_pixel(&affichage, i, (j) % 128, BLUE_Pixel);
@@ -377,19 +363,6 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-HUB75_bitset init_bitset() {
-  HUB75_bitset bitset;
-  for (int i = 0; i < HAUTEUR_MATRICE; i++) {
-    for (int j = 0; j < LARGEUR_MATRICE; j++) {
-      bitset.matrice[i][j].red = 0;
-      bitset.matrice[i][j].green = 0;
-      bitset.matrice[i][j].blue = 0;
-    }
-  }
-
-  return bitset;
-}
-
 void Affichage(HUB75_bitset *bitset) {
 	uint16_t t = 50;
   /* Sélection des lignes */
@@ -474,76 +447,6 @@ void Affichage(HUB75_bitset *bitset) {
   }
 }
 
-void affiche_lettre(HUB75_bitset *bitset, unsigned int pos_x,
-                    unsigned int pos_y, unsigned char red, unsigned char green,
-                    unsigned char blue, unsigned char lettre) {
-  for (unsigned int x = 0; x < 5; x++) {
-    for (unsigned int y = 0; y < 7; y++) {
-      if (font5x7[lettre * 5 + x] >> y & 1) {
-        bitset->matrice[pos_y + y][pos_x + x].red = red;
-        bitset->matrice[pos_y + y][pos_x + x].blue = blue;
-        bitset->matrice[pos_y + y][pos_x + x].green = green;
-      } else {
-        // bitset->matrice[pos_y + y][pos_x + x].red = 0;
-      }
-    }
-  }
-}
-
-void affiche_phrase(HUB75_bitset *bitset, unsigned int pos_x,
-                    unsigned int pos_y, unsigned char red, unsigned char green,
-                    unsigned char blue, unsigned char *phrase) {
-  for (int index = 0; phrase[index] != '\0'; index++) {
-
-    affiche_lettre(bitset, pos_x, pos_y, red, green, blue, phrase[index]);
-    pos_x += 5;
-  }
-}
-
-void ecrire_pixel(HUB75_bitset *bitset, int pos_x, int pos_y, Pixel pixel) {
-  bitset->matrice[pos_x][pos_y] = pixel;
-}
-
-void eteindre_pixel(HUB75_bitset *bitset, int pos_x, int pos_y) {
-  ecrire_pixel(bitset, pos_x, pos_y, creer_pixel(0, 0, 0));
-}
-
-void affiche_rectangle(HUB75_bitset *bitset, unsigned int borne_min_x,
-                       unsigned int borne_max_x, unsigned int borne_min_y,
-                       unsigned int borne_max_y, Pixel pixel) {
-  for (unsigned int i = borne_min_x; i <= borne_max_x; i++) {
-    for (unsigned int j = borne_min_y; j <= borne_max_y; j++) {
-      if (j >= borne_min_y || j <= borne_max_y || i >= borne_min_x ||
-          i <= borne_max_x) {
-        ecrire_pixel(bitset, i, j, pixel);
-      }
-    }
-  }
-}
-
-/**
- * @brief Décale les pixels d'une ligne de la matrice d'un vers la gauche.
- * @param bitset Pointteur vers le bitset HUB75
- * @param ligne Ligne à décaler
- */
-void decaler_ligne(HUB75_bitset *bitset, unsigned int ligne) {
-  // offset %= LARGEUR_MATRICE;
-  Pixel temp_pixel;
-  temp_pixel = bitset->matrice[ligne][0];
-  for (int i = 0; i < LARGEUR_MATRICE; i++) {
-    bitset->matrice[ligne][i] = bitset->matrice[ligne][i + 1];
-  }
-  bitset->matrice[ligne][LARGEUR_MATRICE - 1] = temp_pixel;
-}
-
-Pixel creer_pixel(unsigned char red, unsigned char green, unsigned char blue) {
-  Pixel pixel;
-  pixel.red = red;
-  pixel.green = green;
-  pixel.blue = blue;
-  return pixel;
-}
-
 void affichage_bitset(HUB75_bitset *bitset) {
   // L'utilisation de pointeurs a été préférée à celle de variables car ils
   // peuvent être modifiés par la fonction tout en gardant la structure de
@@ -611,16 +514,6 @@ unsigned char ReadBCD() {
   return BCD;
 }
 
-void ResetDisplay(HUB75_bitset *bitset) {
-  for (unsigned int i=0; i<HAUTEUR_MATRICE; i++) {
-    for (unsigned int j=0; j<LARGEUR_MATRICE; j++) {
-      bitset->matrice[i][j].red = 0;
-      bitset->matrice[i][j].green = 0;
-      bitset->matrice[i][j].blue = 0;
-    }
-  }
-}
-
 void ReadScore(char *score) {
   unsigned char digit = 0, digit_score = ReadBCD();
 
@@ -648,11 +541,6 @@ void ReadScore(char *score) {
     default:
       score[digit] = ' ';
       break;
-  }
-}
-
-void delai(uint16_t n) {
-  for (uint16_t i = 0; i < n; i++) {
   }
 }
 /* USER CODE END 4 */

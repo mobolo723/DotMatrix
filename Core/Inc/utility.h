@@ -27,13 +27,13 @@
 /**
  * @brief Affiche une lettre aux coordonnées choisies
  *
- * @param bitset Pointeur vers l'ensemble de pixels de la dalle.
- * @param pos_x Ligne où afficher la lettre.
- * @param pos_y Colonne où afficher la lettre.
- * @param red Intensité de la couleur rouge.
- * @param green Intensité de la couleur verte.
- * @param blue Intensité de la couleur bleue.
- * @param lettre Lettre à afficher. Tous les caractères ASCII sont pris en
+ * @param bitset    Pointeur vers l'ensemble de pixels de la dalle.
+ * @param pos_x     Ligne où afficher la lettre.
+ * @param pos_y     Colonne où afficher la lettre.
+ * @param red       Intensité de la couleur rouge.
+ * @param green     Intensité de la couleur verte.
+ * @param blue      Intensité de la couleur bleue.
+ * @param lettre    Lettre à afficher. Tous les caractères ASCII sont pris en
  * charge.
  *
  * @note Les caractères ASCII sont pris en charge par la fonction
@@ -47,13 +47,13 @@ void affiche_lettre(HUB75_bitset *bitset, unsigned int pos_x,
 /**
  * @brief Affiche une phrase à partir des coordonées de départ
  *
- * @param bitset Pointeur vers l'ensemble de pixels de la dalle.
- * @param pos_x Ligne de départ.
- * @param pos_y Colonne de départ.
- * @param red Intensité de la couleur rouge.
- * @param green Intensité de la couleur verte.
- * @param blue Intensité de la couleur bleue.
- * @param phrase Pointeur vers la phrase à afficher.
+ * @param bitset    Pointeur vers l'ensemble de pixels de la dalle.
+ * @param pos_x     Ligne de départ.
+ * @param pos_y     Colonne de départ.
+ * @param red       Intensité de la couleur rouge.
+ * @param green     Intensité de la couleur verte.
+ * @param blue      Intensité de la couleur bleue.
+ * @param phrase    Pointeur vers la phrase à afficher.
  *
  * @note La fonction ne gère pas les retours à la ligne pour les phrases trop
  * longues.
@@ -83,8 +83,8 @@ void decalage_ligne(HUB75_bitset *bitset, unsigned int ligne, int offset);
  * @param bitset    Pointeur vers l'ensemble de pixels de la dalle.
  * @param ligne     Colonne à décaler.
  * @param offset    Offset de décalage. Un offset positif correspond à un
- * décalage vers le haut. Un offset négatif correspond à un décalage vers le 
- * bas.
+ * décalage vers le bas. Un offset négatif correspond à un décalage vers le
+ * haut.
  */
 void decalage_colonne(HUB75_bitset *bitset, unsigned int colonne, int offset);
 
@@ -102,8 +102,8 @@ void decalage_colonne(HUB75_bitset *bitset, unsigned int colonne, int offset);
  * @param blue         Composante bleue du rectangle. (0-255)
  */
 void rectangle_plein(HUB75_bitset *bitset, int x_min, int y_min, int x_max,
-                    int y_max, unsigned char red, unsigned char green,
-                    unsigned char blue);
+                     int y_max, unsigned char red, unsigned char green,
+                     unsigned char blue);
 
 /**
  * @brief Modifie un ensemble de pixels HUB75_bitset et construit un rectangle
