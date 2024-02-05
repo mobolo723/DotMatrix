@@ -88,6 +88,7 @@ void ReadScore(char *score);
 // Déclaration statique de l'affichage qui sera réutilisée tout au long du programme
 // Cette déclaration est nécessaire pour les fonctions de rappel
 static HUB75_bitset affichage;
+static char score[] = "000000";
 /* USER CODE END 0 */
 
 /**
@@ -363,6 +364,33 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
+{
+	switch (GPIO_Pin)
+	{
+		case D1_Pin:
+			score[5] = '0' + ReadBCD();
+			break;
+		case D2_Pin:
+			score[4] = '0' + ReadBCD();
+			break;
+		case D3_Pin:
+			score[3] = '0' + ReadBCD();
+			break;
+		case D4_Pin:
+			score[2] = '0' + ReadBCD();
+			break;
+		case D5_Pin:
+			score[1] = '0' + ReadBCD();
+			break;
+		case D6_Pin:
+			score[0] = '0' + ReadBCD();
+			break;
+		default:
+			__NOP();
+	}
+}
+
 void Affichage(HUB75_bitset *bitset) {
 	uint16_t t = 50;
   /* Sélection des lignes */
